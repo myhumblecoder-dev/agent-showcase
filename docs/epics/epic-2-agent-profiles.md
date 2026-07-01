@@ -4,7 +4,7 @@ CRUD for agent profiles: validation schema, server action, edit form, and profil
 
 ---
 
-## Story 2.1 — Validation schemas for profile and post
+## Story 6 — Validation schemas for profile and post
 
 **Depends on:** (none)
 
@@ -29,9 +29,9 @@ CRUD for agent profiles: validation schema, server action, edit form, and profil
 
 ---
 
-## Story 2.2 — Create/update profile server action
+## Story 7 — Create/update profile server action
 
-**Depends on:** Story 2.1
+**Depends on:** Story 6
 
 **Files to create:**
 - `src/app/actions/profile.ts`
@@ -47,15 +47,15 @@ CRUD for agent profiles: validation schema, server action, edit form, and profil
 
 **Testing:**
 - Test unauthenticated: `getSession` throws → returns `{ ok: false, error: 'Unauthenticated' }` and `prisma.agentProfile.upsert` is NOT called.
-- Test validation failure: `getSession` resolves to `{ userId: 'u1', ... }`, input `{ displayName: '' }` → returns `{ ok: false, error: ... }` and `prisma.agentProfile.upsert` is NOT called.
-- Test success: valid data, `getSession` resolves → `prisma.agentProfile.upsert` called with `{ where: { userId: 'u1' }, create: { userId: 'u1', displayName: 'Alice', framework: 'langchain', tags: [] }, update: { displayName: 'Alice', framework: 'langchain', tags: [] } }` → returns `{ ok: true }`.
+- Test validation failure: `getSession` resolves to `{ userId: 'u1', name: null, email: null, image: null }`, input `{ displayName: '' }` → returns `{ ok: false, error: ... }` and `prisma.agentProfile.upsert` is NOT called.
+- Test success: valid data `{ displayName: 'Alice', framework: 'langchain', tags: [] }`, `getSession` resolves → `prisma.agentProfile.upsert` called with `{ where: { userId: 'u1' }, create: { userId: 'u1', displayName: 'Alice', framework: 'langchain', tags: [] }, update: { displayName: 'Alice', framework: 'langchain', tags: [] } }` → returns `{ ok: true }`.
 - Write ONLY these three tests.
 
 ---
 
-## Story 2.3 — ProfileForm component
+## Story 8 — ProfileForm component
 
-**Depends on:** Story 2.2
+**Depends on:** Story 7
 
 **Files to create:**
 - `src/components/ProfileForm.tsx`
@@ -63,8 +63,8 @@ CRUD for agent profiles: validation schema, server action, edit form, and profil
 
 **Acceptance Criteria:**
 - `ProfileForm.tsx` is a `"use client"` component accepting props `{ initialValues?: { displayName: string; bio?: string; framework: string; tags: string[]; githubUrl?: string; websiteUrl?: string }; onSave: (data: unknown) => Promise<{ ok: boolean; error?: string }> }`.
-- Renders controlled inputs for each field; tags are a comma-separated text input that splits on `,` and trims whitespace.
-- On submit calls `onSave(formValues)` and displays an error message if `result.ok` is false, or a "Saved!" message if true.
+- Renders controlled inputs for displayName, bio, framework, tags (comma-separated), githubUrl, websiteUrl.
+- On submit calls `onSave({ displayName, bio, framework, tags: tagsInput.split(',').map(t => t.trim()).filter(Boolean), githubUrl, websiteUrl })` and displays an error message if `result.ok` is false, or a "Saved!" message if true.
 - Uses shadcn `Button`, `Input`, and `Textarea` for form controls.
 - `ProfileForm.test.tsx` covers the cases below; `onSave` is a `vi.fn()` prop.
 
@@ -76,9 +76,9 @@ CRUD for agent profiles: validation schema, server action, edit form, and profil
 
 ---
 
-## Story 2.4 — Profile edit page
+## Story 9 — Profile edit page
 
-**Depends on:** Story 2.3
+**Depends on:** Story 8
 
 **Files to create:**
 - `src/app/profile/edit/page.tsx`
@@ -92,9 +92,9 @@ CRUD for agent profiles: validation schema, server action, edit form, and profil
 
 ---
 
-## Story 2.5 — Profile view page
+## Story 10 — Profile view page and AgentCard
 
-**Depends on:** Story 2.4
+**Depends on:** Story 9
 
 **Files to create:**
 - `src/app/profile/page.tsx`

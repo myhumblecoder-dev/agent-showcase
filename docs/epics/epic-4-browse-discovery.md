@@ -4,20 +4,20 @@ Filter and search agent profiles by framework, tags, and keyword query.
 
 ---
 
-## Story 4.1 — Browse agents server action
+## Story 19 — Browse agents server action
 
-**Depends on:** Story 2.2
+**Depends on:** Story 7
 
 **Files to create:**
 - `src/app/actions/browseAgents.ts`
 - `src/app/actions/browseAgents.test.ts`
 
 **Acceptance Criteria:**
-- `src/app/actions/browseAgents.ts` exports exactly one function: `async function browseAgents(opts?: { framework?: string; tags?: string[]; q?: string }): Promise<Array<{ id: string; displayName: string; bio: string | null; framework: string; tags: string[]; githubUrl: string | null; websiteUrl: string | null; userId: string }>>`.
+- `src/app/actions/browseAgents.ts` exports exactly one function: `async function browseAgents(opts?: { framework?: string; tags?: string[]; q?: string })`.
 - Builds a Prisma `where` object:
-  - If `opts?.framework` is non-empty: `framework: opts.framework`.
-  - If `opts?.tags` has length > 0: `tags: { hasSome: opts.tags }`.
-  - If `opts?.q` is non-empty: `OR: [{ displayName: { contains: opts.q, mode: 'insensitive' } }, { bio: { contains: opts.q, mode: 'insensitive' } }]`.
+  - If `opts?.framework` is non-empty string: include `framework: opts.framework`.
+  - If `opts?.tags` has length > 0: include `tags: { hasSome: opts.tags }`.
+  - If `opts?.q` is non-empty string: include `OR: [{ displayName: { contains: opts.q, mode: 'insensitive' } }, { bio: { contains: opts.q, mode: 'insensitive' } }]`.
 - Calls `prisma.agentProfile.findMany({ where, orderBy: { createdAt: 'desc' }, take: 50 })`.
 - Returns the result array. Omit the return-type annotation; let TS infer.
 - Implement `browseAgents` exactly once; do NOT emit alternate variants.
@@ -32,9 +32,9 @@ Filter and search agent profiles by framework, tags, and keyword query.
 
 ---
 
-## Story 4.2 — BrowseFilters component
+## Story 20 — BrowseFilters component
 
-**Depends on:** Story 4.1
+**Depends on:** Story 19
 
 **Files to create:**
 - `src/components/BrowseFilters.tsx`
@@ -43,8 +43,8 @@ Filter and search agent profiles by framework, tags, and keyword query.
 **Acceptance Criteria:**
 - `BrowseFilters.tsx` is a `"use client"` component accepting props `{ onFilter: (opts: { framework?: string; tags?: string[]; q?: string }) => void; frameworks: string[] }`.
 - Renders a `<select>` of framework options (first option is `""` / "All frameworks") driven by `frameworks` prop.
-- Renders a text `Input` for keyword search (label "Search").
-- Renders a text `Input` for tags (label "Tags", comma-separated).
+- Renders a text `Input` with label "Search" for keyword.
+- Renders a text `Input` with label "Tags" (comma-separated).
 - Renders a shadcn `Button` "Filter" that on click calls `onFilter({ framework: selectedFramework || undefined, tags: tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(Boolean) : undefined, q: qInput || undefined })`.
 - `BrowseFilters.test.tsx` covers the cases below; `onFilter` is `vi.fn()`.
 
@@ -52,27 +52,27 @@ Filter and search agent profiles by framework, tags, and keyword query.
 - Test renders framework options: given `frameworks={['langchain', 'autogen']}`, both appear as `<option>` elements.
 - Test filter click no input: clicking "Filter" → `onFilter` called with `{}` (all fields undefined).
 - Test filter with framework: select "langchain", click "Filter" → `onFilter` called with `{ framework: 'langchain' }` (other fields undefined).
-- Test filter with keyword: type "bot" in search, click "Filter" → `onFilter` called with `{ q: 'bot' }`.
+- Test filter with keyword: type "bot" in search input, click "Filter" → `onFilter` called with `{ q: 'bot' }`.
 - Write ONLY these four tests.
 
 ---
 
-## Story 4.3 — Browse page
+## Story 21 — Browse page
 
-**Depends on:** Story 4.2
-
-**Files to create:**
-- `src/app/browse/page.tsx`
-
-**Acceptance Criteria:**
-- `src/app/browse/page.tsx` is a server component; exports `export const dynamic = 'force-dynamic'`.
-- Fetches all profiles for the framework list: `const allProfiles = await prisma.agentProfile.findMany({ select: { framework: true } })`.
-- Derives unique frameworks: `const frameworks = [...new Set(allProfiles.map(p => p.framework))].sort()`.
-- Renders `<BrowseFilters frameworks={frameworks} onFilter={...} />` (client island) and an initial `<AgentCard>` grid from `await browseAgents()`.
-- Because the page is a server component, `onFilter` cannot be a server-side handler. Instead render a client wrapper `BrowsePage.tsx` (see below) that holds local filter state and calls `browseAgents` via a client-side import of the action.
-- Creates `src/app/browse/BrowsePage.tsx` as a `"use client"` component that: accepts `{ initialProfiles: AgentProfile[]; frameworks: string[] }`, holds local `profiles` state, renders `<BrowseFilters>` with `onFilter` that calls `browseAgents(opts)` and sets state, renders a grid of `<AgentCard profile={p} key={p.id} />` for current profiles.
-- `src/app/browse/page.tsx` renders `<BrowsePage initialProfiles={allProfiles} frameworks={frameworks} />`.
+**Depends on:** Story 20
 
 **Files to create:**
 - `src/app/browse/page.tsx`
 - `src/app/browse/BrowsePage.tsx`
+
+**Acceptance Criteria:**
+- `src/app/browse/page.tsx` is a server component; exports `export const dynamic = 'force-dynamic'`.
+- Fetches `const allProfiles = await prisma.agentProfile.findMany({ select: { framework: true } })`.
+- Derives `const frameworks = [...new Set(allProfiles.map(p => p.framework))].sort()`.
+- Fetches `const initialProfiles = await browseAgents()` (imported from `'@/app/actions/browseAgents'`).
+- Renders `<BrowsePage initialProfiles={initialProfiles} frameworks={frameworks} />`.
+- `src/app/browse/BrowsePage.tsx` is a `"use client"` component accepting `{ initialProfiles: Awaited<ReturnType<typeof browseAgents>>; frameworks: string[] }`.
+- Holds local state `profiles` initialized to `initialProfiles`.
+- Renders `<BrowseFilters frameworks={frameworks} onFilter={async (opts) => { const results = await browseAgents(opts); setProfiles(results); }} />`.
+- Renders a grid `<div className="grid ...">` of `<AgentCard profile={p} key={p.id} />` for current `profiles`.
+- If `profiles` is empty, renders `<p>No agents found.</p>`.

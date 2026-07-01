@@ -4,7 +4,7 @@ Wire GitHub OAuth auth into the app using the provisioned Auth.js backbone. Stor
 
 ---
 
-## Story 1.1 — Extend Prisma schema with AgentProfile and Post models
+## Story 1 — Extend Prisma schema with AgentProfile and Post models
 
 **Depends on:** (none)
 
@@ -20,7 +20,7 @@ Wire GitHub OAuth auth into the app using the provisioned Auth.js backbone. Stor
 
 ---
 
-## Story 1.2 — Session guard helper action
+## Story 2 — Session guard helper action
 
 **Depends on:** (none)
 
@@ -43,9 +43,9 @@ Wire GitHub OAuth auth into the app using the provisioned Auth.js backbone. Stor
 
 ---
 
-## Story 1.3 — NavBar with sign-in and sign-out
+## Story 3 — NavBar with sign-in and sign-out
 
-**Depends on:** Story 1.2
+**Depends on:** Story 2
 
 **Files to create:**
 - `src/components/NavBar.tsx`
@@ -55,10 +55,10 @@ Wire GitHub OAuth auth into the app using the provisioned Auth.js backbone. Stor
 - `src/app/layout.tsx`
 
 **Acceptance Criteria:**
-- `NavBar.tsx` is a `"use client"` component accepting props `{ userImage?: string | null; userName?: string | null; isSignedIn: boolean }`.
-- When `isSignedIn` is true, renders the user's avatar (`<img src={userImage}` when present, else initials) and a "Sign out" button that calls a `signOut` prop function.
-- When `isSignedIn` is false, renders a "Sign in with GitHub" button that calls a `signIn` prop function.
-- `layout.tsx` is a server component that calls `await auth()` to derive `isSignedIn`, `userImage`, `userName`, and passes them as props to `<NavBar>` along with `signIn`/`signOut` imported from `'@/auth'`.
+- `NavBar.tsx` is a `"use client"` component accepting props `{ userImage?: string | null; userName?: string | null; isSignedIn: boolean; signIn: () => void; signOut: () => void }`.
+- When `isSignedIn` is true, renders the user's avatar (`<img src={userImage}` when present, else initials) and a "Sign out" button that calls the `signOut` prop.
+- When `isSignedIn` is false, renders a "Sign in with GitHub" button that calls the `signIn` prop.
+- `layout.tsx` is a server component that calls `await auth()` to derive `isSignedIn`, `userImage`, `userName`, and passes them as props to `<NavBar>` along with server-action-wrapped `signIn`/`signOut` from `'@/auth'`.
 - `NavBar.test.tsx` covers the cases below; component is rendered with RTL against prop fixtures (no real auth calls).
 
 **Testing:**
@@ -69,7 +69,7 @@ Wire GitHub OAuth auth into the app using the provisioned Auth.js backbone. Stor
 
 ---
 
-## Story 1.4 — Sign-in page
+## Story 4 — Sign-in page
 
 **Depends on:** (none)
 
@@ -84,7 +84,7 @@ Wire GitHub OAuth auth into the app using the provisioned Auth.js backbone. Stor
 
 ---
 
-## Story 1.5 — Update middleware matcher for app routes
+## Story 5 — Update middleware matcher for app routes
 
 **Depends on:** (none)
 

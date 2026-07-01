@@ -4,7 +4,7 @@ Markdown post creation, publishing, the home feed, and public post detail page.
 
 ---
 
-## Story 3.1 — Slug generation lib
+## Story 11 — Slug generation lib
 
 **Depends on:** (none)
 
@@ -28,9 +28,9 @@ Markdown post creation, publishing, the home feed, and public post detail page.
 
 ---
 
-## Story 3.2 — Create post server action
+## Story 12 — Create post server action
 
-**Depends on:** Story 2.1, Story 3.1
+**Depends on:** Story 6, Story 11
 
 **Files to create:**
 - `src/app/actions/posts.ts`
@@ -56,9 +56,9 @@ Markdown post creation, publishing, the home feed, and public post detail page.
 
 ---
 
-## Story 3.3 — Publish post server action
+## Story 13 — Publish post server action
 
-**Depends on:** Story 3.2
+**Depends on:** Story 12
 
 **Files to create:**
 - `src/app/actions/publishPost.ts`
@@ -74,22 +74,22 @@ Markdown post creation, publishing, the home feed, and public post detail page.
 
 **Testing:**
 - Test unauthenticated: `getSession` throws → returns `{ ok: false, error: 'Unauthenticated' }` and `prisma.post.update` NOT called.
-- Test not owner: `getSession` resolves `{ userId: 'u1' }`, post found with `author.userId = 'u2'` → returns `{ ok: false, error: 'Not found' }` and `prisma.post.update` NOT called.
-- Test success: `getSession` resolves `{ userId: 'u1' }`, post found with `author.userId = 'u1'` → `prisma.post.update` called with `{ where: { id: postId }, data: { published: true } }` → returns `{ ok: true }`.
+- Test not owner: `getSession` resolves `{ userId: 'u1', name: null, email: null, image: null }`, post found with `author.userId = 'u2'` → returns `{ ok: false, error: 'Not found' }` and `prisma.post.update` NOT called.
+- Test success: `getSession` resolves `{ userId: 'u1', name: null, email: null, image: null }`, post found with `author.userId = 'u1'` → `prisma.post.update` called with `{ where: { id: postId }, data: { published: true } }` → returns `{ ok: true }`.
 - Write ONLY these three tests.
 
 ---
 
-## Story 3.4 — List published posts server action
+## Story 14 — List published posts server action
 
-**Depends on:** Story 3.2
+**Depends on:** Story 12
 
 **Files to create:**
 - `src/app/actions/listPublishedPosts.ts`
 - `src/app/actions/listPublishedPosts.test.ts`
 
 **Acceptance Criteria:**
-- `src/app/actions/listPublishedPosts.ts` exports exactly one function: `async function listPublishedPosts(opts?: { limit?: number }): Promise<Array<{ id: string; title: string; slug: string; createdAt: Date; author: { displayName: string; framework: string } }>>`.
+- `src/app/actions/listPublishedPosts.ts` exports exactly one function: `async function listPublishedPosts(opts?: { limit?: number })`.
 - Calls `prisma.post.findMany({ where: { published: true }, orderBy: { createdAt: 'desc' }, take: opts?.limit ?? 20, include: { author: { select: { displayName: true, framework: true } } } })`.
 - Returns the result array directly. Omit the return-type annotation and let TS infer.
 - Implement `listPublishedPosts` exactly once; do NOT emit alternate variants.
@@ -102,9 +102,9 @@ Markdown post creation, publishing, the home feed, and public post detail page.
 
 ---
 
-## Story 3.5 — PostEditor component
+## Story 15 — PostEditor component
 
-**Depends on:** Story 3.2
+**Depends on:** Story 12
 
 **Files to create:**
 - `src/components/PostEditor.tsx`
@@ -127,9 +127,9 @@ Markdown post creation, publishing, the home feed, and public post detail page.
 
 ---
 
-## Story 3.6 — New post page
+## Story 16 — New post page
 
-**Depends on:** Story 3.5
+**Depends on:** Story 15
 
 **Files to create:**
 - `src/app/posts/new/page.tsx`
@@ -141,9 +141,9 @@ Markdown post creation, publishing, the home feed, and public post detail page.
 
 ---
 
-## Story 3.7 — Post detail page
+## Story 17 — Post detail page
 
-**Depends on:** Story 3.4
+**Depends on:** Story 14
 
 **Files to create:**
 - `src/app/posts/[slug]/page.tsx`
@@ -157,9 +157,9 @@ Markdown post creation, publishing, the home feed, and public post detail page.
 
 ---
 
-## Story 3.8 — FeedList component and home page
+## Story 18 — FeedList component and home page
 
-**Depends on:** Story 3.7
+**Depends on:** Story 17
 
 **Files to create:**
 - `src/components/PostCard.tsx`
@@ -172,7 +172,7 @@ Markdown post creation, publishing, the home feed, and public post detail page.
 
 **Acceptance Criteria:**
 - `PostCard.tsx` is a server component accepting `{ post: { title: string; slug: string; createdAt: Date; author: { displayName: string; framework: string } } }`. Renders a shadcn `Card` with post title (linked to `/posts/${post.slug}`), author displayName, and `post.createdAt.toISOString().slice(0, 10)` as the date string.
-- `FeedList.tsx` is a server component accepting `{ posts: Array<...same shape as PostCard...> }`. Renders a `<ul>` of `<PostCard>` items; if empty renders `<p>No posts yet.</p>`.
+- `FeedList.tsx` is a server component accepting `{ posts: Array<{ title: string; slug: string; createdAt: Date; author: { displayName: string; framework: string } }> }`. Renders a `<ul>` of `<PostCard>` items; if empty renders `<p>No posts yet.</p>`.
 - `src/app/page.tsx` exports `export const dynamic = 'force-dynamic'`; calls `listPublishedPosts()` (imported from `'@/app/actions/listPublishedPosts'`); renders `<FeedList posts={posts} />`.
 - `PostCard.test.tsx` covers the cases below.
 - `FeedList.test.tsx` covers the cases below.
