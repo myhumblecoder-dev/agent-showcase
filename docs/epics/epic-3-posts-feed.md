@@ -131,7 +131,7 @@ Markdown post creation, publishing, the home feed, and public post detail page.
 
 ## Story 16 — New post page
 
-**Depends on:** Story 15
+**Depends on:** Story 15, Story 26
 
 **Files to create:**
 - `src/app/posts/new/page.tsx`
@@ -189,7 +189,7 @@ Markdown post creation, publishing, the home feed, and public post detail page.
 
 ## Story 18 — Home page wires feed
 
-**Depends on:** Story 28
+**Depends on:** Story 28, Story 14
 
 **Files to modify:**
 - `src/app/page.tsx`

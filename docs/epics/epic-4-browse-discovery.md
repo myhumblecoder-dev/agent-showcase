@@ -60,7 +60,7 @@ Filter and search agent profiles by framework, tags, and keyword query.
 
 ## Story 29 — BrowsePage client component
 
-**Depends on:** Story 20, Story 25
+**Depends on:** Story 20, Story 25, Story 19
 
 **Files to create:**
 - `src/app/browse/BrowsePage.tsx`
@@ -77,7 +77,7 @@ Filter and search agent profiles by framework, tags, and keyword query.
 
 ## Story 21 — Browse page
 
-**Depends on:** Story 29
+**Depends on:** Story 29, Story 19
 
 **Files to create:**
 - `src/app/browse/page.tsx`
