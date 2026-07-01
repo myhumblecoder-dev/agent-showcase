@@ -43,29 +43,42 @@ Wire GitHub OAuth auth into the app using the provisioned Auth.js backbone. Stor
 
 ---
 
-## Story 3 — NavBar with sign-in and sign-out
+## Story 22 — NavBar component (sign-in / sign-out UI)
 
-**Depends on:** Story 2
+**Depends on:** (none)
 
 **Files to create:**
 - `src/components/NavBar.tsx`
 - `src/components/NavBar.test.tsx`
 
+**Acceptance Criteria:**
+- `NavBar.tsx` is a `"use client"` component accepting props `{ userImage?: string | null; userName?: string | null; isSignedIn: boolean; signIn: () => void; signOut: () => void }`.
+- When `isSignedIn` is true, renders the user's avatar (`<img src={userImage}` with alt `{userName}` when `userImage` is truthy, else a `<span>` with first character of `userName` as initials) and a "Sign out" button that calls the `signOut` prop.
+- When `isSignedIn` is false, renders a "Sign in with GitHub" button that calls the `signIn` prop.
+- No auth imports — all auth state comes in through props.
+- `NavBar.test.tsx` covers the cases below; `signIn`/`signOut` are `vi.fn()`.
+
+**Testing:**
+- Test signed-out state: given `isSignedIn={false}`, renders "Sign in with GitHub" button; "Sign out" is NOT in the document.
+- Test signed-in with image: given `isSignedIn={true}`, `userImage="https://example.com/avatar.jpg"`, `userName="Alice"` → renders `<img>` with src `"https://example.com/avatar.jpg"`; "Sign in with GitHub" is NOT in the document.
+- Test signed-in without image: given `isSignedIn={true}`, `userImage={null}`, `userName="Alice"` → renders span with text "A" (first char of userName); "Sign out" button is in the document.
+- Write ONLY these three tests.
+
+---
+
+## Story 23 — Root layout wires NavBar with auth session
+
+**Depends on:** Story 22
+
 **Files to modify:**
 - `src/app/layout.tsx`
 
 **Acceptance Criteria:**
-- `NavBar.tsx` is a `"use client"` component accepting props `{ userImage?: string | null; userName?: string | null; isSignedIn: boolean; signIn: () => void; signOut: () => void }`.
-- When `isSignedIn` is true, renders the user's avatar (`<img src={userImage}` when present, else initials) and a "Sign out" button that calls the `signOut` prop.
-- When `isSignedIn` is false, renders a "Sign in with GitHub" button that calls the `signIn` prop.
-- `layout.tsx` is a server component that calls `await auth()` to derive `isSignedIn`, `userImage`, `userName`, and passes them as props to `<NavBar>` along with server-action-wrapped `signIn`/`signOut` from `'@/auth'`.
-- `NavBar.test.tsx` covers the cases below; component is rendered with RTL against prop fixtures (no real auth calls).
-
-**Testing:**
-- Test signed-out state: renders "Sign in with GitHub" button; "Sign out" is NOT present.
-- Test signed-in with image: renders an `<img>` with the provided `userImage` src; "Sign in with GitHub" is NOT present.
-- Test signed-in without image: renders initials text instead of `<img>`; "Sign out" button is present.
-- Write ONLY these three tests.
+- `src/app/layout.tsx` imports `auth` and `signIn` and `signOut` from `'@/auth'` and `NavBar` from `'@/components/NavBar'`.
+- Calls `const session = await auth()` at the top of the default export (server component).
+- Derives `isSignedIn = !!session?.user`, `userImage = session?.user?.image ?? null`, `userName = session?.user?.name ?? null`.
+- Wraps the `{children}` in a layout that includes `<NavBar isSignedIn={isSignedIn} userImage={userImage} userName={userName} signIn={async () => { "use server"; await signIn("github") }} signOut={async () => { "use server"; await signOut() }} />` before the main content area.
+- Preserves the existing `<html lang="en">` / `<body>` / font structure from the scaffold.
 
 ---
 
