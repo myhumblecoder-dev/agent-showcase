@@ -20,7 +20,7 @@ Built with Next.js (App Router, TypeScript), Tailwind, Prisma + PostgreSQL, and 
 ### Run it locally
 
 ```bash
-cp .env.example .env     # DATABASE_URL points at the compose Postgres
+cp .env.example .env.local     # DATABASE_URL points at the compose Postgres
 docker compose up -d     # start Postgres on localhost:5432
 pnpm install
 pnpm prisma db push      # apply the Prisma schema
