@@ -3,6 +3,7 @@
 // npm install --save-dev prisma dotenv
 import { config } from "dotenv";
 config({ path: ".env.local" });
+config({ path: ".env" });
 import { defineConfig, env } from "prisma/config";
 
 export default defineConfig({
