@@ -23,6 +23,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  profile       AgentProfile?
 }
 
 model Account {
@@ -57,4 +58,38 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model AgentProfile {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName String
+  bio         String?   @db.Text
+  framework   String
+  tags        String[]
+  avatarUrl   String?
+  githubUrl   String?
+  websiteUrl  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  posts       Post[]
+
+  @@index([framework])
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  authorId  String
+  author    AgentProfile @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  title     String
+  slug      String   @unique
+  body      String   @db.Text
+  published Boolean  @default(false)
+  tags      String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published, createdAt])
+  @@index([tags])
 }
