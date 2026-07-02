@@ -14,3 +14,5 @@ export async function getSession(): Promise<{ userId: string; name: string | nul
     image: session.user.image ?? null,
   };
 }
+
+export { getSession as defaultGetSession };
